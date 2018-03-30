@@ -3,11 +3,11 @@ FROM alpine:edge AS build-caddy
 
 LABEL maintainer="Lee Keitel" \
       name="lfkeitel/caddy" \
-      version="0.10.10" \
+      version="0.10.12" \
       vcs-type="git" \
       vcs-url="https://github.com/lfkeitel/caddy-docker"
 
-ENV caddy_version=0.10.10
+ENV caddy_version=0.10.12
 
 RUN apk update \
     && apk add go libcap bash alpine-sdk \

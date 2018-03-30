@@ -2,7 +2,7 @@
 
 **Base Image**: Alpine Edge
 
-**Caddy Version**: 0.10.10 (latest)
+**Caddy Version**: 0.10.12 (latest)
 
 **Github Repository**: https://github.com/lfkeitel/caddy-docker
 
