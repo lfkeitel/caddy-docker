@@ -2,11 +2,21 @@
 
 **Base Image**: Alpine Edge
 
-**Caddy Version**: 0.10.12 (latest)
+**Caddy Version**: 0.11.0
 
 **Github Repository**: https://github.com/lfkeitel/caddy-docker
 
 This is and up-to-date build of [Caddy](https://caddyserver.com/) in Alpine.
+
+## Telemetry
+
+This build has a few changes to the telemetry "feature". Telemetry is disabled by default. It can be enabled
+by setting the environment variable `CADDY_TELEMETRY_ENABLE` to either "1", "t", or "true". The telemetry
+server endpoint can also be changed by setting the variable `CADDY_TELEMETRY_ENDPOINT`.
+
+## CADDYPATH
+
+**CADDYPATH** is set to `/caddy` by default.
 
 ## Using the Image
 

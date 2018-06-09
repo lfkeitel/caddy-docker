@@ -3,11 +3,11 @@ FROM alpine:edge AS build-caddy
 
 LABEL maintainer="Lee Keitel" \
       name="lfkeitel/caddy" \
-      version="0.10.12" \
+      version="0.11.0" \
       vcs-type="git" \
       vcs-url="https://github.com/lfkeitel/caddy-docker"
 
-ENV caddy_version=0.10.12
+ENV caddy_version=0.11.0
 
 RUN apk update \
     && apk add go libcap bash alpine-sdk \
@@ -15,17 +15,31 @@ RUN apk update \
 
 ADD https://github.com/mholt/caddy/archive/v$caddy_version.tar.gz /caddy.tar.gz
 
+# Get source and unpack
 RUN mkdir -p $HOME/go/src/github.com/mholt \
     && cd $HOME/go/src/github.com/mholt \
     && tar -xzf /caddy.tar.gz \
-    && mv caddy-$caddy_version caddy \
-    && cd caddy/caddy \
-    && go get \
+    && mv caddy-$caddy_version caddy
+
+WORKDIR /root/go/src/github.com/mholt/caddy/caddy
+
+# Apply patches and customizations
+COPY caddyrun_telemetry.go caddymain/caddyrun_telemetry.go
+
+RUN sed -i -e '/const enableTelemetry = true/d' ./caddymain/run.go \
+    && sed -i -e 's/(unofficial)/(Onesimus Systems Build)/g' ./caddymain/run.go \
+    && sed -i -e 's/endpoint+/Endpoint+/g' ../telemetry/telemetry.go \
+    && sed -i -e '/endpoint =/d' ../telemetry/telemetry.go \
+    && echo 'var Endpoint = "https://telemetry.caddyserver.com/v1/update/"' >> ../telemetry/telemetry.go
+
+# Build
+RUN go get \
     && go build -v -o /caddy -ldflags "-X github.com/mholt/caddy/caddy/caddymain.gitTag=$caddy_version"
 
 # Build image with caddy to serve
 FROM alpine:edge
 
+ENV CADDYPATH=/caddy
 COPY --from=build-caddy /caddy /usr/sbin/caddy
 
 RUN apk update \
@@ -33,14 +47,15 @@ RUN apk update \
     && addgroup -S caddy \
     && adduser -S -D -h /var/lib/caddy -s /sbin/nologin -G caddy -g caddy caddy \
     && chmod +x /usr/sbin/caddy \
-    && install -d -o caddy -g caddy /var/lib/caddy /etc/caddy /var/www \
+    && install -d -o caddy -g caddy /var/lib/caddy /etc/caddy /var/www /caddy \
     && chown caddy:caddy /usr/sbin/caddy \
     && setcap cap_net_bind_service=+ep /usr/sbin/caddy \
     && apk del libcap \
     && rm -rf /var/cache/apk/*
 
+USER caddy
 ADD caddy.conf /etc/caddy/caddy.conf
 
 EXPOSE 80 443
 
-CMD ["/usr/sbin/caddy", "-conf", "/etc/caddy/caddy.conf"]
+ENTRYPOINT ["/usr/sbin/caddy", "-conf", "/etc/caddy/caddy.conf"]
