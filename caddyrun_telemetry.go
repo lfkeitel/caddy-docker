@@ -3,15 +3,15 @@ package caddymain
 import (
 	"os"
 
-	"github.com/mholt/caddy/telemetry"
+	"github.com/caddyserver/caddy/telemetry"
 )
 
-var enableTelemetry = false
-
 func init() {
+	EnableTelemetry = false
+
 	switch os.Getenv("CADDY_TELEMETRY_ENABLE") {
 	case "1", "true", "t":
-		enableTelemetry = true
+		EnableTelemetry = true
 	}
 
 	telemEndpoint := os.Getenv("CADDY_TELEMETRY_ENDPOINT")

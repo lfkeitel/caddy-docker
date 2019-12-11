@@ -2,12 +2,12 @@
 FROM alpine:edge AS build-caddy
 
 LABEL maintainer="Lee Keitel" \
-      name="lfkeitel/caddy" \
-      version="0.11.0" \
-      vcs-type="git" \
-      vcs-url="https://github.com/lfkeitel/caddy-docker"
+    name="lfkeitel/caddy" \
+    version="1.0.4" \
+    vcs-type="git" \
+    vcs-url="https://github.com/lfkeitel/caddy-docker"
 
-ENV caddy_version=0.11.0
+ENV caddy_version=1.0.4
 
 RUN apk update \
     && apk add go libcap bash alpine-sdk \
@@ -26,8 +26,7 @@ WORKDIR /root/go/src/github.com/mholt/caddy/caddy
 # Apply patches and customizations
 COPY caddyrun_telemetry.go caddymain/caddyrun_telemetry.go
 
-RUN sed -i -e '/const enableTelemetry = true/d' ./caddymain/run.go \
-    && sed -i -e 's/(unofficial)/(Onesimus Systems Build)/g' ./caddymain/run.go \
+RUN sed -i -e 's/Version: "unknown"/Version: "(Onesimus Systems Build)"/g' ./caddymain/run.go \
     && sed -i -e 's/endpoint+/Endpoint+/g' ../telemetry/telemetry.go \
     && sed -i -e '/endpoint =/d' ../telemetry/telemetry.go \
     && echo 'var Endpoint = "https://telemetry.caddyserver.com/v1/update/"' >> ../telemetry/telemetry.go
